@@ -11,6 +11,7 @@ export interface Offers {
 }
 
 export interface PropertyProps {
+        id: string;
         name: string;
         address: Address;
         rating: number;
@@ -25,5 +26,16 @@ export interface PillProps {
   label: string;
   onClick?: () => void;
   active?: boolean;
+}
+
+export interface Review {
+  id: string;
+  user: string;
+  comment: string;
+  rating: number;
+}
+
+export interface ReviewSectionProps {
+  propertyId: string; // <--- type here
 }
 
