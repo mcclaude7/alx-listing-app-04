@@ -33,5 +33,4 @@ export default function PropertyDetailPage() {
   if (!property) {
     return <p>Property not found</p>;
   }
-
   return <PropertyDetail property={property} />;}

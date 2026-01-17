@@ -1,44 +1,94 @@
-// 
-import axios from "axios";
-import { useState } from "react";
+import { useRouter } from 'next/router';
+import { useState } from 'react';
+import axios from 'axios';
 
-export default function BookingForm() {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phoneNumber: "",
-    cardNumber: "",
-    expirationDate: "",
-    cvv: "",
-    billingAddress: "",
-  });
+export default function BookingPage() {
+    const router = useRouter();
+    const { propertyId } = router.query; // grab propertyId from URL
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    // Form state
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [checkIn, setCheckIn] = useState('');
+    const [checkOut, setCheckOut] = useState('');
+    const [guests, setGuests] = useState(1);
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+    if (!propertyId) return <p>Loading property info...</p>; // wait for propertyId
 
-    try {
-      const response = await axios.post("/api/bookings", formData);
-      alert("Booking confirmed!");
-    } catch (error) {
-      setError("Failed to submit booking.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
 
-  return (
-    <form onSubmit={handleSubmit}>
-      {/* Form fields for booking details */}
-      <button type="submit" disabled={loading}>
-        {loading ? "Processing..." : "Confirm & Pay"}
-      </button>
-      {error && <p className="text-red-500">{error}</p>}
-    </form>
-  );
+        try {
+            await axios.post('/api/booking', {
+                propertyId,
+                name,
+                email,
+                checkIn,
+                checkOut,
+                guests,
+            });
+            setSuccess(true);
+        } catch (err) {
+            console.error('Booking failed:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (success) return <p>Booking successful! 🎉</p>;
+
+    return (
+        <div className="container mx-auto p-6">
+            <h1 className="text-2xl font-bold mb-4">Book Your Property</h1>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <input
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="Name"
+                    required
+                    className="border p-2 w-full"
+                />
+                <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="Email"
+                    required
+                    className="border p-2 w-full"
+                />
+                <input
+                    type="date"
+                    value={checkIn}
+                    onChange={e => setCheckIn(e.target.value)}
+                    required
+                    className="border p-2 w-full"
+                />
+                <input
+                    type="date"
+                    value={checkOut}
+                    onChange={e => setCheckOut(e.target.value)}
+                    required
+                    className="border p-2 w-full"
+                />
+                <input
+                    type="number"
+                    min={1}
+                    value={guests}
+                    onChange={e => setGuests(Number(e.target.value))}
+                    required
+                    className="border p-2 w-full"
+                />
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-md"
+                >
+                    {loading ? 'Booking...' : 'Book Now'}
+                </button>
+            </form>
+        </div>
+    );
 }
